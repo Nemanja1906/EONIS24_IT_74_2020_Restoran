@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Restoran;
 using Restoran.Data;
 using Restoran.Entities;
@@ -46,6 +49,23 @@ builder.Services.AddScoped<IZaposleniRepository, ZaposleniRepository>();
 builder.Services.AddScoped<IMusterijaRepository, MusterijaRepository>();
 
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer("Bearer", x =>
+                {
+                    x.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = configuration["Jwt:Issuer"],
+                        ValidAudience = configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true
+                    };
+                });
+
+builder.Services.AddSingleton(new JwtHelper(builder.Configuration));
+builder.Services.AddScoped<HashingService>();
 var app = builder.Build();
 
 
@@ -66,3 +86,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+

@@ -24,7 +24,7 @@ namespace Restoran.Controllers
             this.mapper = mapper;
         }
 
-       
+        [Authorize]
         [HttpGet]
         [HttpHead] 
         [ProducesResponseType(StatusCodes.Status200OK)] 
@@ -39,7 +39,7 @@ namespace Restoran.Controllers
             return Ok(mapper.Map<List<ZaposleniDto>>(zaposlenis));
         }
 
- 
+        [AllowAnonymous]
         [HttpGet("{zaposleniID}")]
         public ActionResult<ZaposleniDto> GetZaposleni(Guid zaposleniID)
         {
@@ -103,6 +103,7 @@ namespace Restoran.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{zaposleniID}")]
+        [Authorize]
         public IActionResult DeleteZaposleni(Guid zaposleniID)
         {
             try
