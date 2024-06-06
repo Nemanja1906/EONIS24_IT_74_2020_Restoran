@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Restoran.Data
 {
-    public class AutentifikacijaRepository
+    public class AutentifikacijaRepository: IAutentifikacijaRepository
     {
         private readonly RestoranContext _dbContext;
         private readonly IConfiguration _configuration;
@@ -24,10 +24,8 @@ namespace Restoran.Data
         {
             var user = await _dbContext.Musterija.SingleOrDefaultAsync(x => x.KontaktMusterije == username);
 
-            if (user != null && _hashingService.VerifyPassword(user.ImeMusterije, password))
+            if (user != null && user.ImeMusterije == password)
             {
-                // Remove sensitive data
-                user.ImeMusterije = null;
 
                 var token = GenerateJwtToken(user.MusterijaID, "User");
                 return new { Token = token, Role = "User" };
@@ -35,10 +33,9 @@ namespace Restoran.Data
 
             var admin = await _dbContext.Zaposleni.SingleOrDefaultAsync(x => x.KontaktZaposlenog == username);
 
-            if (admin != null && _hashingService.VerifyPassword(admin.ImeZaposlenog, password))
+            if (admin != null && admin.ImeZaposlenog == password)
             {
-                // Remove sensitive data
-                admin.ImeZaposlenog = null;
+              
 
                 var token = GenerateJwtToken(admin.ZaposleniID, "Admin");
                 return new { Token = token, Role = "Admin" };

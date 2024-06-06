@@ -41,12 +41,14 @@ builder.Services.AddDbContext<RestoranContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("RestoranDB"))
     .LogTo(Console.WriteLine, LogLevel.Information);
 });
-
+builder.Services.AddScoped<HashingService>();
+builder.Services.AddScoped<IAutentifikacijaRepository, AutentifikacijaRepository>();
 builder.Services.AddScoped<IPorudzbinaRepository, PorudzbinaRepository>();
 builder.Services.AddScoped<IStavkaPorudzbineRepository, StavkaPorudzbineRepository>();
 builder.Services.AddScoped<IProizvodRepository, ProizvodRepository>();
 builder.Services.AddScoped<IZaposleniRepository, ZaposleniRepository>();
 builder.Services.AddScoped<IMusterijaRepository, MusterijaRepository>();
+
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -64,8 +66,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     };
                 });
 
+
 builder.Services.AddSingleton(new JwtHelper(builder.Configuration));
-builder.Services.AddScoped<HashingService>();
+
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
+});
 var app = builder.Build();
 
 
@@ -80,6 +89,8 @@ app.UseCors(x => x
             .AllowAnyHeader());
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
